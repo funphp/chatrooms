@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>ChatCAT</title>
+	<link rel="stylesheet" href="../css/room.css">
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+    $(function(){
+        var host = '{{config.host}}';
+        var messages = io.connect(host+'/messages');
+        var roomNumber = {{room_number}};
+        var userName = '{{user.fullName}}';
+        var userPic = '{{user.profilePic}}';
+
+        messages.on('connect', function(){
+            console.log('connection ready to send message');
+            messages.emit('joinroom', {user:userName, userPic:userPic, room: roomNumber});
+        })
+        $('.newmessage').keyup(function(e){
+            if(e.which === 13 && $(this).val()!='') {
+                messages.emit('newMessage',{
+                    room_number: roomNumber,
+                    userPic: userPic,
+                    user: userName,
+                    message: $(this).val()
+
+                });
+                updateMessageFeed(userPic, $(this).val());
+                $(this).val('');
+            }
+
+        });
+        messages.on('messageFeed', function(data){
+            var msg = JSON.parse(data);
+            updateMessageFeed(msg.userPic, msg.message);
+        })
+
+        messages.on('updateUserList', function(data){
+            var users = JSON.parse(data);
+            $('.users').html('');
+            for (var i in users) {
+                var str ='<li><img src="'+users[i].userPic+'"><strong>'+users[i].user+'</strong></li>';
+                 $(str).prependTo($('.users'));
+            }
+        })
+        function updateMessageFeed(userPic, Message) {
+            var str ='<li>';
+                str+='<div class="msgbox">';
+                str+=' <div class="pic"><img src="'+userPic+'"></div>';
+                str+='<div class="msg"><p>'+Message+'</p></div>';
+                str+='</div></li>';
+                $(str).prependTo($('.messages'));
+
+        }
+
+        setInterval(function(){
+            messages.emit('updateList', {room:roomNumber});
+        }, 15 *1000);
+
+    })
+    </script>
+
+</head>
+<body>
+<div class="rm-container">
+		<h1 class="rm-title">ChatCAT</h1>
+		<div class="rm-userbox">
+			<img src="{{user.profilePic}}" class="userPic">
+			<h3 class="userName">{{user.fullName}} | <a href="/logout">Logout</a><a href="/chatrooms">More Chatrooms</a></h3>
+		</div>
+		<div class="rm-roomname">
+			<h5>{{room_name}}</h5>
+		</div>
+		<div class="rm-messages">
+			<ul class="messages">
+
+			</ul>
+		</div>
+		<div class="rm-users">
+			<ul class="users">
+				<li><img src="{{user.profilePic}}"><h5>{{user.fullName}}</h5></li>
+			</ul>
+		</div>
+		<div class="rm-newmessage">
+			<input type="text" class="newmessage" autocomplete="off" placeholder="Type in your message and press enter !">
+
+		</div>
+	</div>
+</body>
+</html>
