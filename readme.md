@@ -1,6 +1,7 @@
 Sample Chat Server
 -------------------
 This is very simple chat server developed using followings
+
     a) nodejs
     b) expressjs
     c) mongodb
