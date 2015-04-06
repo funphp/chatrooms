@@ -3,7 +3,7 @@ module.exports = function(express, app, passport, config, rooms) {
 
     router.get('/', function(req, res, next){
 
-    res.render('index', {title:"Welcome to ChatCAT"});
+    res.render('index', {title:"Welcome to ChatRooms"});
 });
 
     function securePages(req, res, next){
